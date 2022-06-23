@@ -1,0 +1,83 @@
+{
+  "Comment": "A description of my state machine",
+  "StartAt": "Ec2InstanceRunning",
+  "States": {
+    "Ec2InstanceRunning": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.detail.instance-id",
+          "StringEquals": "i-05ba5eb995be0dd95",
+          "Next": "DescribeInstances"
+        }
+      ],
+      "Default": "WrongInstance"
+    },
+    "DescribeInstances": {
+      "Type": "Task",
+      "Parameters": {},
+      "Resource": "arn:aws:states:::aws-sdk:ec2:describeInstances",
+      "Next": "Map"
+    },
+    "Map": {
+      "Type": "Map",
+      "Iterator": {
+        "StartAt": "IsSatisfactoryInstance",
+        "States": {
+          "IsSatisfactoryInstance": {
+            "Type": "Choice",
+            "Choices": [
+              {
+                "Variable": "$.Instances[0].InstanceId",
+                "StringEquals": "i-05ba5eb995be0dd95",
+                "Next": "IsRunning"
+              }
+            ],
+            "Default": "Skip"
+          },
+          "IsRunning": {
+            "Type": "Choice",
+            "Choices": [
+              {
+                "Variable": "$.Instances[0].State.Name",
+                "StringEquals": "running",
+                "Next": "RunningIP"
+              }
+            ],
+            "Default": "NotRunning"
+          },
+          "NotRunning": {
+            "Type": "Task",
+            "Parameters": {
+              "Name": "SatisfactoryNotRunning",
+              "Value": "TODO_date"
+            },
+            "Resource": "arn:aws:states:::aws-sdk:ssm:putParameter",
+            "End": true
+          },
+          "RunningIP": {
+            "Type": "Task",
+            "Parameters": {
+              "Name": "SatisfactoryIP",
+              "Type": "String",
+              "Value.$": "$.Instances[0]"
+            },
+            "Resource": "arn:aws:states:::aws-sdk:ssm:putParameter",
+            "End": true
+          },
+          "Skip": {
+            "Type": "Pass",
+            "End": true
+          }
+        }
+      },
+      "ItemsPath": "$.Reservations",
+      "End": true
+    },
+    "WrongInstance": {
+      "Type": "Pass",
+      "End": true,
+      "Result": {}
+    }
+  }
+}
