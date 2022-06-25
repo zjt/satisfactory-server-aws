@@ -191,6 +191,17 @@ export class ServerHostingStack extends Stack {
             "Choices": [{
               "StringEquals": `${server.instanceId}`
             }]
+          },
+          "Map": {
+            "Iterator": {
+              "States": {
+                "IsSatisfactoryInstance": {
+                  "Choices": [{
+                    "StringEquals": `${server.instanceId}`
+                  }]
+                }
+              }
+            }
           }
         }
       });

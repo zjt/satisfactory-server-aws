@@ -29,7 +29,7 @@
             "Choices": [
               {
                 "Variable": "$.Instances[0].InstanceId",
-                "StringEquals": "i-05ba5eb995be0dd95",
+                "StringEquals": "PLACEHOLDER",
                 "Next": "IsRunning"
               }
             ],
@@ -50,7 +50,9 @@
             "Type": "Task",
             "Parameters": {
               "Name": "SatisfactoryNotRunning",
-              "Value": "TODO_date"
+              "Type": "String",
+              "Overwrite": "True",
+              "Value": "timestamp"
             },
             "Resource": "arn:aws:states:::aws-sdk:ssm:putParameter",
             "End": true
@@ -60,7 +62,8 @@
             "Parameters": {
               "Name": "SatisfactoryIP",
               "Type": "String",
-              "Value.$": "$.Instances[0]"
+              "Overwrite": "True",
+              "Value.$": "$.Instances[0].NetworkInterfaces[0].Association.PublicIp"
             },
             "Resource": "arn:aws:states:::aws-sdk:ssm:putParameter",
             "End": true
