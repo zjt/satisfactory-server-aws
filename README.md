@@ -1,6 +1,20 @@
 # Satisfactory Server AWS
 Automated Satisfactory Dedicated Server management on AWS
 
+## zjt's fork
+
+This fork of satisfactory-server-aws includes the following enhancements
+1. [Architecture diagram](https://app.excalidraw.com/l/1AKx7GXXAac/5SYgy6aVwWa) 
+    - blue is implemented
+    - green is planned
+    - yellow is from upstream
+2. Implemented
+    - EventBridge event on EC2 state changes result in SSM Parameters to store running instance IP and stop time
+3. Planned
+    - Update Route 53 zone with running instance IP
+    - Chat integration
+    - Monitoring and size/cost optimization
+
 ## Intro
 FICSIT Incorporated has provided you with this tool (cost deducted from your existing balance) to assist you with Project Assembly.  This tool can help you collaborate with friends on your factory projects.
 
@@ -41,7 +55,8 @@ At a minimum, account (account number) and region are required.
 ## Quick Start
 This assumes you have all requirements and have [configured aws cli](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html)
 
-npm i @matthewbonig/state-machine
+The Step Functions CDK integration depends on the following
+`npm i @matthewbonig/state-machine`
 
 1. [Clone this project](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository)
 2. `npm install`
