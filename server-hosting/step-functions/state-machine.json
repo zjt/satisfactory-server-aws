@@ -7,7 +7,7 @@
       "Choices": [
         {
           "Variable": "$.detail.instance-id",
-          "StringEquals": "i-05ba5eb995be0dd95",
+          "StringEquals": "PLACEHOLDER",
           "Next": "DescribeInstances"
         }
       ],

@@ -188,9 +188,9 @@ export class ServerHostingStack extends Stack {
         definition: JSON.parse(fs.readFileSync('server-hosting/step-functions/state-machine.json').toString()),
         overrides: {
           "Ec2InstanceRunning": {
-            "Choices": {
-              "StringEquals": `arn:aws:ec2:*:${Config.account}:instance/${server.instanceId}`
-            }
+            "Choices": [{
+              "StringEquals": `${server.instanceId}`
+            }]
           }
         }
       });
