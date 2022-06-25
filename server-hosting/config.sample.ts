@@ -1,4 +1,7 @@
 export const Config = {
+     // Route 53 zone (optional - a zone will be created but you need to make it authoritative manually)
+     Route53Zone: '',
+     
      // compulsory parameters
 
      // server hosting region

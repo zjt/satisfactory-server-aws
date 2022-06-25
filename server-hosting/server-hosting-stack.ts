@@ -12,6 +12,7 @@ import { StateMachine } from '@matthewbonig/state-machine'
 import * as fs from "fs";
 import * as events from 'aws-cdk-lib/aws-events';
 import * as targets from 'aws-cdk-lib/aws-events-targets';
+import * as route53 from 'aws-cdk-lib/aws-route53'
 
 export class ServerHostingStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -210,7 +211,15 @@ export class ServerHostingStack extends Stack {
       const rule = new events.Rule(this, 'rule', {
         eventPattern: JSON.parse('{ "source": ["aws.ec2"], "detail-type": ["EC2 Instance State-change Notification"], "detail": { "state": ["running"]}}'),
       });
+      
       rule.addTarget(new targets.SfnStateMachine(notifierSFSM));
+
+      // dns zone for the game
+      if (Config.Route53Zone) {
+        new route53.PublicHostedZone(this, 'HostedZone', {
+          zoneName: Config.Route53Zone
+        });
+      }
 
     }
   }
