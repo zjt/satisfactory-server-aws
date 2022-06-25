@@ -10,10 +10,12 @@ This fork of satisfactory-server-aws includes the following enhancements
     - yellow is from upstream
 2. Implemented
     - EventBridge event on EC2 state changes result in SSM Parameters to store running instance IP and stop time
+    - Larger instance size. Note: this increases the cost estimate as stated below.
 3. Planned
     - Update Route 53 zone with running instance IP
     - Chat integration
     - Monitoring and size/cost optimization
+    - Incorporate capabilities of https://hub.docker.com/r/vinanrra/satisfactory-server
 
 ## Intro
 FICSIT Incorporated has provided you with this tool (cost deducted from your existing balance) to assist you with Project Assembly.  This tool can help you collaborate with friends on your factory projects.
