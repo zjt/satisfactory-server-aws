@@ -66,6 +66,32 @@
               "Value.$": "$.Instances[0].NetworkInterfaces[0].Association.PublicIp"
             },
             "Resource": "arn:aws:states:::aws-sdk:ssm:putParameter",
+            "Next": "Change_DNS_IP",
+            "ResultPath": null
+          },
+          "Change_DNS_IP": {
+            "Type": "Task",
+            "Parameters": {
+              "ChangeBatch": {
+                "Changes": [
+                  {
+                    "Action": "UPSERT",
+                    "ResourceRecordSet": {
+                      "Name": "PLACEHOLDER",
+                      "Type": "A",
+                      "ResourceRecords": [
+                        {
+                          "Value.$": "$.Instances[0].NetworkInterfaces[0].Association.PublicIp"
+                        }
+                      ],
+                      "Ttl": 1
+                    }
+                  }
+                ]
+              },
+              "HostedZoneId": "PLACEHOLDER"
+            },
+            "Resource": "arn:aws:states:::aws-sdk:route53:changeResourceRecordSets",
             "End": true
           },
           "Skip": {

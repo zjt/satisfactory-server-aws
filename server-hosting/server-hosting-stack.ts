@@ -181,7 +181,35 @@ export class ServerHostingStack extends Stack {
       sfPutSSM.addActions("ssm:*");
       sfPutSSM.addResources("*");
       sfRole.addToPolicy(sfPutSSM);
-
+      
+      // Route 53 dns zone for the game
+      var myZone;
+      var myZoneID = "NOZONEFOUND"
+      if (Config.Route53Zone) {
+        // create the Route 53 zone
+        myZone = new route53.PublicHostedZone(this, 'HostedZone', {
+          zoneName: Config.Route53Zone
+        });
+      }
+      else if ( Config.Route53Name ) {
+        // lookup zone if name specified
+        myZone = route53.HostedZone.fromLookup(this, 'MyZone', {
+          domainName: Config.Route53Name,
+        });
+      }
+      if ( myZone ) {
+        myZoneID = myZone.hostedZoneId;
+        // give the step function state machine permission to update the zone
+        const sfR53ChangeRRS = new iam.PolicyStatement();
+        sfR53ChangeRRS.addActions("route53:ChangeResourceRecordSets");
+        sfR53ChangeRRS.addResources(`arn:aws:route53:::hostedzone/${myZoneID}`);
+        sfRole.addToPolicy(sfR53ChangeRRS);
+      }
+      var DnsName = "NODNSNAME"
+      if ( Config.Route53Name ) {
+        DnsName = Config.Route53Name
+      }
+      
       // Step Functions state machine to discover instance public IP
       const notifierSFSM = new StateMachine(this, 'Test', {
         stateMachineName: 'SatisfactoryNotifier',
@@ -200,6 +228,20 @@ export class ServerHostingStack extends Stack {
                   "Choices": [{
                     "StringEquals": `${server.instanceId}`
                   }]
+                },
+                "Change_DNS_IP": {
+                  "Parameters": {
+                    "ChangeBatch": {
+                      "Changes": [
+                        {
+                          "ResourceRecordSet": {
+                            "Name": DnsName
+                          }
+                        }
+                      ]
+                    },
+                    "HostedZoneId": myZoneID
+                  }
                 }
               }
             }
@@ -209,17 +251,9 @@ export class ServerHostingStack extends Stack {
       
       // Step Function is a target for the EventBridge rule when EC2 instances are started
       const rule = new events.Rule(this, 'rule', {
-        eventPattern: JSON.parse('{ "source": ["aws.ec2"], "detail-type": ["EC2 Instance State-change Notification"], "detail": { "state": ["running"]}}'),
+        eventPattern: JSON.parse(`{ "source": ["aws.ec2"], "detail-type": ["EC2 Instance State-change Notification"], "detail": { "instance-id": ["${server.instanceId}"]}}`),
       });
-      
       rule.addTarget(new targets.SfnStateMachine(notifierSFSM));
-
-      // dns zone for the game
-      if (Config.Route53Zone) {
-        new route53.PublicHostedZone(this, 'HostedZone', {
-          zoneName: Config.Route53Zone
-        });
-      }
 
     }
   }

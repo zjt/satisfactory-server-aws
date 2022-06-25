@@ -1,6 +1,8 @@
 export const Config = {
      // Route 53 zone (optional - a zone will be created but you need to make it authoritative manually)
-     Route53Zone: '',
+     // If the zone exists then that will be used instead
+     Route53Zone: '', // leave blank if you do not want the IP address to be updated with a name record in the zone
+     Route53Name: 'satisfactory.example.invalid',
      
      // compulsory parameters
 
