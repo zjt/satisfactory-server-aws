@@ -41,6 +41,8 @@ At a minimum, account (account number) and region are required.
 ## Quick Start
 This assumes you have all requirements and have [configured aws cli](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html)
 
+npm i @matthewbonig/state-machine
+
 1. [Clone this project](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository)
 2. `npm install`
 3. `npx cdk bootstrap <aws account number>/<aws region>` (replace account number and region)
