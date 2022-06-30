@@ -19,10 +19,11 @@ This fork of satisfactory-server-aws includes the following enhancements
 
 ### Configure 
 
-[server-hosting/config.ts](server-hosting/config.ts)
-    - Route53Zone
-    - Route53Name
-    - DiscordWebHook
+[server-hosting/config.ts](server-hosting/config.sample.ts)
+
+- Route53Zone
+- Route53Name
+- DiscordWebHook
 
 ## Intro
 FICSIT Incorporated has provided you with this tool (cost deducted from your existing balance) to assist you with Project Assembly.  This tool can help you collaborate with friends on your factory projects.
