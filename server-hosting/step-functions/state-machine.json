@@ -55,6 +55,35 @@
               "Value": "timestamp"
             },
             "Resource": "arn:aws:states:::aws-sdk:ssm:putParameter",
+            "Next": "GetParameter"
+          },
+          "GetParameter": {
+            "Type": "Task",
+            "Next": "DiscordServerDown",
+            "Parameters": {
+              "Name": "discordAPIEndpoint"
+            },
+            "Resource": "arn:aws:states:::aws-sdk:ssm:getParameter"
+          },
+          "DiscordServerDown": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::apigateway:invoke",
+            "Parameters": {
+              "ApiEndpoint.$": "$.Parameter.Value",
+              "Method": "POST",
+              "Headers": {
+                "Content-Type": [
+                  "application/json"
+                ]
+              },
+              "Stage": "prod",
+              "Path": "/",
+              "QueryParameters": {},
+              "RequestBody": {
+                "content": "down"
+              },
+              "AuthType": "IAM_ROLE"
+            },
             "End": true
           },
           "RunningIP": {
@@ -92,6 +121,35 @@
               "HostedZoneId": "PLACEHOLDER"
             },
             "Resource": "arn:aws:states:::aws-sdk:route53:changeResourceRecordSets",
+            "Next": "GetParameter (1)"
+          },
+          "GetParameter (1)": {
+            "Type": "Task",
+            "Next": "DiscordServerUp",
+            "Parameters": {
+              "Name": "discordAPIEndpoint"
+            },
+            "Resource": "arn:aws:states:::aws-sdk:ssm:getParameter"
+          },
+          "DiscordServerUp": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::apigateway:invoke",
+            "Parameters": {
+              "ApiEndpoint.$": "$.Parameter.Value",
+              "Method": "POST",
+              "Headers": {
+                "Content-Type": [
+                  "application/json"
+                ]
+              },
+              "Stage": "prod",
+              "Path": "/",
+              "QueryParameters": {},
+              "RequestBody": {
+                "content": "up"
+              },
+              "AuthType": "IAM_ROLE"
+            },
             "End": true
           },
           "Skip": {

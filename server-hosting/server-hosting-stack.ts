@@ -13,6 +13,7 @@ import * as fs from "fs";
 import * as events from 'aws-cdk-lib/aws-events';
 import * as targets from 'aws-cdk-lib/aws-events-targets';
 import * as route53 from 'aws-cdk-lib/aws-route53'
+import * as ssm from 'aws-cdk-lib/aws-ssm'
 
 export class ServerHostingStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -73,6 +74,7 @@ export class ServerHostingStack extends Stack {
 
     const server = new ec2.Instance(this, `${prefix}Server`, {
       // 2 vCPU, 8 GB RAM should be enough for most factories
+      // or not!
       instanceType: new ec2.InstanceType("m5a.xlarge"),
       // get exact ami from parameter exported by canonical
       // https://discourse.ubuntu.com/t/finding-ubuntu-images-with-the-aws-ssm-parameter-store/15507
@@ -209,6 +211,29 @@ export class ServerHostingStack extends Stack {
       if ( Config.Route53Name ) {
         DnsName = Config.Route53Name
       }
+
+      // API gateway for Discord web hook, if defined
+      const discordURL = Config.DiscordWebHook;
+      const discordApi = new apigw.RestApi(this, `${Config.prefix}Discord`, {
+        restApiName: `${Config.prefix}Discord`,
+      });
+      discordApi.root.addMethod(
+        'POST', 
+        new apigw.HttpIntegration(
+          discordURL,
+          { 
+            httpMethod: "POST"
+          }
+        )
+      );
+      
+      // get the API endpoint and stash it in SSM for the SF to query 
+      var discordAPIGWEndpoint = discordApi.url;//"placeholder.execute-api.us-east-2.amazonaws.com";//Config.DiscordAPIGWEndpoint;
+      discordAPIGWEndpoint = discordAPIGWEndpoint.split('/')[2];
+      new ssm.StringParameter(  this, "discordAPIEndpoint", { 
+        parameterName: "discordAPIEndpoint",
+        stringValue: discordAPIGWEndpoint
+      });
       
       // Step Functions state machine to discover instance public IP
       const notifierSFSM = new StateMachine(this, 'Test', {

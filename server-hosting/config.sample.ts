@@ -4,6 +4,9 @@ export const Config = {
      Route53Zone: '', // leave blank if you do not want the IP address to be updated with a name record in the zone
      Route53Name: 'satisfactory.example.invalid',
      
+     // discord web hook
+     DiscordWebHook: '',
+     
      // compulsory parameters
 
      // server hosting region
