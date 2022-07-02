@@ -80,7 +80,7 @@
               "Path": "/",
               "QueryParameters": {},
               "RequestBody": {
-                "content": "down"
+                "content": "PLACEHOLDER"
               },
               "AuthType": "IAM_ROLE"
             },
@@ -146,7 +146,7 @@
               "Path": "/",
               "QueryParameters": {},
               "RequestBody": {
-                "content": "up"
+                "content": "PLACEHOLDER"
               },
               "AuthType": "IAM_ROLE"
             },

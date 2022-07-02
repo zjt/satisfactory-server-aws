@@ -23,7 +23,13 @@ This fork of satisfactory-server-aws includes the following enhancements
 
 - Route53Zone
 - Route53Name
+- startApiName
 - DiscordWebHook
+- ServerInstanceType
+- serverUpMessage
+- serverDownMessage
+- tagKey
+- tagVal
 
 ## Intro
 FICSIT Incorporated has provided you with this tool (cost deducted from your existing balance) to assist you with Project Assembly.  This tool can help you collaborate with friends on your factory projects.

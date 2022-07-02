@@ -5,6 +5,7 @@
       "**"
     ],
     "exclude": [
+      "config.sample.ts",
       "README.md",
       "cdk*.json",
       "**/*.d.ts",

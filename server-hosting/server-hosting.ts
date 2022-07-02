@@ -20,3 +20,6 @@ new ServerHostingStack(app, 'ServerHostingStack', {
 
   /* For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html */
 });
+if ( Config.tagKey && Config.tagVal ) {
+  cdk.Tags.of(app).add(Config.tagKey, Config.tagVal);
+}

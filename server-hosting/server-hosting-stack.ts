@@ -14,6 +14,8 @@ import * as events from 'aws-cdk-lib/aws-events';
 import * as targets from 'aws-cdk-lib/aws-events-targets';
 import * as route53 from 'aws-cdk-lib/aws-route53'
 import * as ssm from 'aws-cdk-lib/aws-ssm'
+import * as certificatemanager from 'aws-cdk-lib/aws-certificatemanager'
+import * as r53targets from 'aws-cdk-lib/aws-route53-targets'
 
 export class ServerHostingStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -72,10 +74,14 @@ export class ServerHostingStack extends Stack {
     securityGroup.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.udp(15000), "Beacon port")
     securityGroup.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.udp(15777), "Query port")
 
+    var serverInstanceType = Config.ServerInstanceType;
+    if ( ! serverInstanceType ) {
+      serverInstanceType = 'm5a.xlarge'
+    }
     const server = new ec2.Instance(this, `${prefix}Server`, {
       // 2 vCPU, 8 GB RAM should be enough for most factories
       // or not!
-      instanceType: new ec2.InstanceType("m5a.xlarge"),
+      instanceType: new ec2.InstanceType(serverInstanceType),
       // get exact ami from parameter exported by canonical
       // https://discourse.ubuntu.com/t/finding-ubuntu-images-with-the-aws-ssm-parameter-store/15507
       machineImage: ec2.MachineImage.fromSsmParameter("/aws/service/canonical/ubuntu/server/20.04/stable/current/amd64/hvm/ebs-gp2/ami-id"),
@@ -165,10 +171,11 @@ export class ServerHostingStack extends Stack {
         ]
       }))
 
-      new apigw.LambdaRestApi(this, `${Config.prefix}StartServerApi`, {
+      const startApi = new apigw.LambdaRestApi(this, `${Config.prefix}StartServerApi`, {
         handler: startServerLambda,
         description: "Trigger lambda function to start server",
-      })
+        
+      });
       
       // Create a role to for Step Functions state machine 
       const sfRole = new iam.Role(this, 'Role', {
@@ -193,23 +200,41 @@ export class ServerHostingStack extends Stack {
           zoneName: Config.Route53Zone
         });
       }
-      else if ( Config.Route53Name ) {
+      else if ( Config.serverHostName ) {
         // lookup zone if name specified
         myZone = route53.HostedZone.fromLookup(this, 'MyZone', {
-          domainName: Config.Route53Name,
+          domainName: Config.serverHostName,
         });
       }
       if ( myZone ) {
-        myZoneID = myZone.hostedZoneId;
         // give the step function state machine permission to update the zone
+        myZoneID = myZone.hostedZoneId;
         const sfR53ChangeRRS = new iam.PolicyStatement();
         sfR53ChangeRRS.addActions("route53:ChangeResourceRecordSets");
         sfR53ChangeRRS.addResources(`arn:aws:route53:::hostedzone/${myZoneID}`);
         sfRole.addToPolicy(sfR53ChangeRRS);
-      }
+        // Create a certificate for the start server API gateway domain.
+        // Ownership of the domain will be validated via DNS records created for us in the Hosted Zone.
+        const certificate = new certificatemanager.Certificate(this, 'startApiCert', {
+          domainName: Config.startApiName,
+          validation: certificatemanager.CertificateValidation.fromDns(myZone)
+        });
+        // Configure the API gateway to use the domain and certificate
+        startApi.addDomainName("startApiName", {
+          domainName: Config.startApiName,
+          certificate: certificate,
+        });
+        // Add the alias record to the zone
+        new route53.AaaaRecord(this, `startApiRecord`, {
+          recordName: Config.startApiName,
+          zone: myZone,
+          target: route53.RecordTarget.fromAlias(new r53targets.ApiGateway(startApi)),
+        });
+      } // end of things to do if there is a Route 53 DNS zone to work with
+      
       var DnsName = "NODNSNAME"
-      if ( Config.Route53Name ) {
-        DnsName = Config.Route53Name
+      if ( Config.serverHostName ) {
+        DnsName = Config.serverHostName
       }
 
       // API gateway for Discord web hook, if defined
@@ -235,6 +260,16 @@ export class ServerHostingStack extends Stack {
         stringValue: discordAPIGWEndpoint
       });
       
+      // the server up and server down message is configurable in config.ts
+      var serverUpMessage = Config.serverUpMessage;
+      if ( ! serverUpMessage ) {
+        serverUpMessage = "up"
+      }
+      var serverDownMessage = Config.serverDownMessage;
+      if ( ! serverDownMessage ) {
+        serverDownMessage = "down"
+      }
+      
       // Step Functions state machine to discover instance public IP
       const notifierSFSM = new StateMachine(this, 'Test', {
         stateMachineName: 'SatisfactoryNotifier',
@@ -254,6 +289,13 @@ export class ServerHostingStack extends Stack {
                     "StringEquals": `${server.instanceId}`
                   }]
                 },
+                "DiscordServerDown": {
+                  "Parameters": {
+                    "RequestBody": {
+                      "content": serverDownMessage
+                    }
+                  }
+                },
                 "Change_DNS_IP": {
                   "Parameters": {
                     "ChangeBatch": {
@@ -267,6 +309,13 @@ export class ServerHostingStack extends Stack {
                     },
                     "HostedZoneId": myZoneID
                   }
+                },
+                "DiscordServerUp": {
+                  "Parameters": {
+                    "RequestBody": {
+                      "content": serverUpMessage
+                    }
+                  }
                 }
               }
             }
@@ -276,7 +325,7 @@ export class ServerHostingStack extends Stack {
       
       // Step Function is a target for the EventBridge rule when EC2 instances are started
       const rule = new events.Rule(this, 'rule', {
-        eventPattern: JSON.parse(`{ "source": ["aws.ec2"], "detail-type": ["EC2 Instance State-change Notification"], "detail": { "instance-id": ["${server.instanceId}"]}}`),
+        eventPattern: JSON.parse(`{ "source": ["aws.ec2"], "detail-type": ["EC2 Instance State-change Notification"], "detail": { "instance-id": ["${server.instanceId}"], "state": ["running", "stopped"]}}`),
       });
       rule.addTarget(new targets.SfnStateMachine(notifierSFSM));
 

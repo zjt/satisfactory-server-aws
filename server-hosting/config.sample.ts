@@ -1,11 +1,23 @@
 export const Config = {
      // Route 53 zone (optional - a zone will be created but you need to make it authoritative manually)
      // If the zone exists then that will be used instead
-     Route53Zone: '', // leave blank if you do not want the IP address to be updated with a name record in the zone
-     Route53Name: 'satisfactory.example.invalid',
+     Route53Zone: 'satisfactory.examplt.invalid', // leave blank if you do not want the IP address to be updated with a name record in the zone
+     serverHostName: 'satisfactory.example.invalid', // if this zone exists then it will be updated if Route53Zone isn't defined
+     startApiName: 'start.satisfactory.example.invalid', // must be subdomain within the zone (if it exists)
      
      // discord web hook
      DiscordWebHook: '',
+     
+     // instance type
+     ServerInstanceType: 'm5a.xlarge',
+     
+     // customize the discord notifications here
+     serverUpMessage: 'server up at: satisfactory.example.invalid',
+     serverDownMessage: 'server down (satisfactory.example.invalid)',
+     
+     // assign tags to all of the taggable resources (e.g. for cost-allocation)
+     tagKey: "app",
+     tagVal: "satisfactory",
      
      // compulsory parameters
 
