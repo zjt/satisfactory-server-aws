@@ -225,7 +225,7 @@ export class ServerHostingStack extends Stack {
           certificate: certificate,
         });
         // Add the alias record to the zone
-        new route53.AaaaRecord(this, `startApiRecord`, {
+        new route53.ARecord(this, `startApiRecord`, {
           recordName: Config.startApiName,
           zone: myZone,
           target: route53.RecordTarget.fromAlias(new r53targets.ApiGateway(startApi)),

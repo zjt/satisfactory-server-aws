@@ -21,15 +21,17 @@ This fork of satisfactory-server-aws includes the following enhancements
 
 [server-hosting/config.ts](server-hosting/config.sample.ts)
 
-- Route53Zone
-- Route53Name
-- startApiName
-- DiscordWebHook
-- ServerInstanceType
-- serverUpMessage
-- serverDownMessage
-- tagKey
-- tagVal
+Set these options:
+
+- Route53Zone - zone will be created if it doesn't exist. If it exists as a subdomain of another zone then point the NS records at it
+- Route53Name - record within the zone that will be associated with the satisfactory server
+- startApiName - record withing the zone that will be associate with the startServer URL
+- DiscordWebHook - webhook URL for your discord channel
+- ServerInstanceType - type of EC2 instance for the satisfactory server
+- serverUpMessage - message you want displayed in discord when the server starts
+- serverDownMessage - message you want displayed in discord when the server stops
+- tagKey - tag key for all resources created
+- tagVal - tag value for all resource created
 
 ## Intro
 FICSIT Incorporated has provided you with this tool (cost deducted from your existing balance) to assist you with Project Assembly.  This tool can help you collaborate with friends on your factory projects.
