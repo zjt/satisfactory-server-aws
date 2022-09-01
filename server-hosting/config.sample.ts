@@ -4,6 +4,8 @@ export const Config = {
      Route53Zone: 'satisfactory.examplt.invalid', // leave blank if you do not want the IP address to be updated with a name record in the zone
      serverHostName: 'satisfactory.example.invalid', // if this zone exists then it will be updated if Route53Zone isn't defined
      startApiName: 'start.satisfactory.example.invalid', // must be subdomain within the zone (if it exists)
+     FunctionURL: false, // experimental
+     StealthMode: true, // don't show information in the start API
      
      // discord web hook
      DiscordWebHook: '',
@@ -18,6 +20,9 @@ export const Config = {
      // assign tags to all of the taggable resources (e.g. for cost-allocation)
      tagKey: "app",
      tagVal: "satisfactory",
+     
+     // Open port 22 on the server - Allowed IP/CIDR
+     OpenSSHPort: "172.31.32.0/20",
      
      // compulsory parameters
 

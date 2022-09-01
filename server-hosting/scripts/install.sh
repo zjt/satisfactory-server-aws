@@ -105,3 +105,20 @@ systemctl start auto-shutdown
 
 # automated backups to s3 every 5 minutes
 su - ubuntu -c "crontab -l -e ubuntu | { cat; echo \"*/5 * * * * /usr/local/bin/aws s3 sync /home/ubuntu/.config/Epic/FactoryGame/Saved/SaveGames/server s3://$S3_SAVE_BUCKET\"; } | crontab -"
+
+# Load any existing saved games from the S3 bucket to EFS mount point
+#su - ubuntu -c "aws s3 sync s3://$S3_SAVE_BUCKET /home/ubuntu/efs-mount-point/Epic-SaveGames"
+
+# 
+# Increase server player limit to 5
+#
+# vim /home/ubuntu/.steam/steamapps/common/SatisfactoryDedicatedServer/FactoryGame/Saved/Config/LinuxServer/Game.ini
+#[/Script/Engine.GameNetworkManager]
+#TotalNetBandwidth=500000
+#MaxDynamicBandwidth=120000
+#MinDynamicBandwidth=100000
+#
+#[/Script/Engine.GameSession]
+#MaxPlayers=5
+#
+#EOF
